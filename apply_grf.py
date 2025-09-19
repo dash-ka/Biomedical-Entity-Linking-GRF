@@ -210,12 +210,9 @@ encoder = encoder.to("cuda")
 # ---- Experiment Settings ----
 embed_dim = 768
 cutoffs = [1, 2, 3, 5, 10, 15, 20]
-sampling_ranges = [10]
-alphas = [0.5] #np.round(np.arange(0, 1.1, 0.1), 1)
+#np.round(np.arange(0, 1.1, 0.1), 1)
 num_runs = 5
 k = 40
-use_faiss = True
-
 
 #main_folder = Path("../prime/llm_gen/gemma14b/s800") #-mesh
 main_folder = Path("BioSyn/SapBERT/gpt4o/ncbi-disease")
@@ -581,78 +578,6 @@ def eval_text_grf(queries_path, feedback_type, feedback_depths=None,run_seed=Non
             })
     return run_results
 
-
-def grf_vector_fusion(queries_path, run_seed, index=None):
-    print(f"\n🔁 Running vector-based GRF with seed {run_seed}")
-    random.seed(run_seed)
-
-    with open(queries_path, encoding='utf-8') as file:
-        queries = json.load(file)
-
-    run_results = []
-
-    for w in alphas:
-        for depth in sampling_ranges:
-            true_cuis, concept_rankings = [], []
-
-            for query_data in tqdm(queries,
-                desc=f"Running VF for epoch={run_seed} with alpha={w} and feedback depth={depth}"):
-                
-
-                query = query_data["entity_text"]
-                golden_cui = query_data["cui"]
-                feedback_synonyms = query_data.get("synonyms")
-                feedback_synonyms = [re.sub("\n", " ", s.strip()) if s.strip() else query for s in feedback_synonyms.split(":")][:20]
-                
-                
-                try:
-                    sampled_feedback = random.sample(feedback_synonyms, depth)
-                except:
-                    print(f"WARNING: Subsumpling for insufficient n. elements {len(feedback_synonyms)}")
-                    sampled_feedback = random.sample(feedback_synonyms, len(feedback_synonyms))
-
-                mention_texts = [query] + sampled_feedback
-
-                # embed query and feedback 
-                embeddings = embed_dense(tokenizer, encoder, mention_texts, max_length=50, show_progress=False)
-                mention_embed = embeddings[0].reshape(1, -1)
-                feedback_embeds = embeddings[1:]
-                
-                feedback_embed = np.average(feedback_embeds, axis=0, weights=None).reshape(1, -1)
-                query_embeds = w * mention_embed + (1 - w) * feedback_embed
-
-                dists, candidate_idxs = index.search(query_embeds, k=k)
-                candidates = eval_dictionary[candidate_idxs[0]].squeeze()
-
-                seen_cuis = set()
-                grf_candidates = []
-                for name, cui in candidates:
-                    if cui not in seen_cuis:
-                        seen_cuis.add(cui)
-                        grf_candidates.append({
-                        "name": name,
-                        "cui": cui,
-                        "label": check_label(cui, golden_cui)
-                    })
-
-                true_cuis.append([golden_cui])
-                concept_rankings.append([c["cui"] for c in grf_candidates])
-                
-            metrics = compute_metrics(concept_rankings, golden_cuis=true_cuis, cutoffs=cutoffs)
-
-            for c in cutoffs:
-                run_results.append({
-                    "strategy": "GRF",
-                    "alpha": w,
-                    "depth": depth,
-                    "cutoff": c,
-                    "recall@cutoff": metrics["recall@k"][c],
-                    "ndcg@cutoff": metrics["ndcg@k"][c],
-                    "run": run_seed
-                })
-    return run_results
-
-
 # running...
 all_results = []
 
@@ -772,4 +697,5 @@ agg_long = pd.concat([
 
 agg_recall.to_csv(main_folder / "results_all_sapbert.csv", index=False)
 print("✅ All strategy results with confidence intervals saved.")
+
 
