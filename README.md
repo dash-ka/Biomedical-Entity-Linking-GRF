@@ -16,3 +16,9 @@ python --dictionary_path ../../kbs/nlm_gene_subset.txt --output_dir ../../datase
 python --dictionary_path ../../kbs/ncbi_gene_subset.txt --output_dir ../../datasets/ncbi-gene
 python --dictionary_path ../../kbs/ncbitaxon.obo --output_dir ../../datasets/ncbi-taxon
 python --dictionary_path ../../kbs/ncbitaxon.obo --output_dir ../../datasets/s800
+```
+
+2. Preprocess datasets
+
+3. Get unseen queries.json file for GRF generation.
+
