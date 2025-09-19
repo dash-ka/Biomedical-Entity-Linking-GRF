@@ -19,3 +19,14 @@ python --dictionary_path ../../kbs/ncbitaxon.obo --output_dir ../../kbs/ncbi-tax
 
 3. Get unseen queries.json file for GRF generation.
 
+```bash
+cd ../..
+python get_unseen_queries.py --input_dir ../submission/datasets/ncbi-disease/processed_data/
+python get_unseen_queries.py --input_dir ../submission/datasets/bc5cdr-disease/processed_data/
+python get_unseen_queries.py --input_dir ../submission/datasets/bc5cdr-chemical/processed_data/
+python get_unseen_queries.py --input_dir ../submission/datasets/nlm-chemical/processed_data/
+python get_unseen_queries.py --input_dir ../submission/datasets/ncbi-gene/processed_data/
+python get_unseen_queries.py --input_dir ../submission/datasets/nlm-gene/processed_data/
+python get_unseen_queries.py --input_dir ../submission/datasets/s800/processed_data/
+python get_unseen_queries.py --input_dir ../submission/datasets/ncbi-taxon/processed_data/
+```
