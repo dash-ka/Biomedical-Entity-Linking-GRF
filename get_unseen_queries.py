@@ -1,4 +1,6 @@
-import gzip, json, re, os, pysbd, argparse
+# This script generates queries.json file with contextualized and unseen test mentions.
+
+import gzip, json, re, os, pysbd, argparse, pronto
 import pandas as pd
 from collections import defaultdict
 from tqdm import tqdm
@@ -25,9 +27,10 @@ def read_annotation_file(ann_file_path):
                 continue
             splitted_line = line.strip().split('||')
             mention = splitted_line[-2]
+            mention_type = splitted_line[2]
             concept_id = splitted_line[-1]
             offsets = splitted_line[1].strip().split('|')
-            data.append({'entity_text': mention.lower(), 'cui':concept_id, "start": offsets[0], "end": offsets[-1], "pmid":splitted_line[0]})
+            data.append({'entity_text': mention.lower(), 'cui':concept_id, "start": int(offsets[0]), "end": int(offsets[-1]), "pmid":splitted_line[0]})
         
     return data
 
@@ -37,6 +40,15 @@ def read_dataset(dataset_folder):
     dataset= []
     for ann_file_path in glob(ann_file_pattern):
         dataset += read_annotation_file(ann_file_path)
+    return dataset
+
+
+def read_gene_dataset(dataset_folder):
+    ann_file_pattern: str = os.path.join(dataset_folder, '*.concept')
+    dataset= dict()
+    for ann_file_path in glob(ann_file_pattern):
+        pmid = Path(ann_file_path).name.split(".")[0]
+        dataset[pmid] = read_annotation_file(ann_file_path)
     return dataset
 
 
@@ -68,7 +80,7 @@ def recalculate_spans(sentences, entities):
                 if sentence_start <= entity_start < sentence_end:
                     new_start = entity_start - sentence_start
                     new_end = entity_end - sentence_start
-                    if sentence_text[new_start:new_end]!=entity_mention:
+                    if sentence_text[new_start:new_end].lower()!=entity_mention.lower():
                          
                          print(sentences)
                          print(sentence_text)
@@ -79,8 +91,8 @@ def recalculate_spans(sentences, entities):
                          #raise Exception
                     annotations.append({
                         "cui": entity_cui,
-                        "start": str(new_start),
-                        "end": str(new_end),
+                        "start": new_start,
+                        "end": new_end,
                         "mention": entity_mention,
                         "type": entity_type
                     })
@@ -125,6 +137,7 @@ def merge_bad_splits(sentences, special_starts=None):
             i += 1
     return merged
 
+
 def split_and_respan(json_obj, use_spacy=True, merge_bad=False):
             
     text = json_obj["text"]
@@ -161,28 +174,141 @@ def split_and_respan(json_obj, use_spacy=True, merge_bad=False):
                         "cui" : a["cui"],
                         "start": int(a["start"]),
                         "end": int(a["end"]),
-                        "sentence": item["text"]
+                        "sentence": item["text"],
+                        "type":a["type"]
                     })
             else:
                 print(item)
             
     return entity_level_data
 
+
+def read_data_sa(path):
+
+    queries = []
+    pmids = []
+
+    data_sa = dict()
+    with open(path, encoding="utf-8") as file:
+        lines = file.readlines()
+
+    for line in tqdm(lines):
+        line = line.strip()
+        if '|t|' in line:
+            title = line.split("|", maxsplit=2)[2]
+        elif '|a|' in line:
+            abstract = line.split("|", maxsplit=2)[2]
+        elif '\t' in line:
+            line = line.split("\t")
+
+            if len(line) == 6:
+                pmid, start, end, mention, _class, taxid = line
+                if _class.lower() in ["gene"]:
+                    queries.append({
+                        "start": int(start),
+                        "end": int(end),
+                        "mention":mention,
+                        "taxid":taxid
+                    })
+        
+        elif len(queries): 
+                    
+            if pmid in pmids:
+                print(pmid)
+                queries = []
+                title = ""
+                abstract = ""
+                continue
+            context = title + "\n" + abstract + "\n"
+            data_sa[pmid] = {"text":context, "annotations":queries}
+                
+            pmids.append(pmid)
+            queries = []
+            title = ""
+            abstract = ""
+
+    return data_sa
+
+
+def build_kb(filepath) -> dict:
+    """Parse the content into a structured KB dictionary."""
+
+    print("Loading the obo ontology...")
+    onto = pronto.Ontology(filepath)
+    kb = {}
+
+    ONTO_PREFIX = "NCBITaxon"
+
+    for i, term in tqdm(enumerate(onto.terms()), total=len(list(onto.terms()))):
+        if ONTO_PREFIX in term.id:
+            if term.obsolete == False:
+
+                cui = term.id.strip("NCBITaxon:")
+                kb[cui] = {
+                    "cui": cui.strip(), 
+                    "alt_cui": "|".join([t.strip("NCBITaxon:").strip() for t in term.alternate_ids]),
+                    "name": term.name.strip(), 
+                    "synonyms": "|".join(list({s.description.strip() for s in term.synonyms if all(x not in s.description.lower() for x in ["inchikey", "inchi"]) and s.description not in ["[*-]", "."] })), 
+                    } 
+
+    print(f"KB loaded with {len(kb)} entries.")
+    return kb
+
+def assign_species(corpus, corpus_sa=None, taxonomy=None):
+
+    for pmid, annotations in corpus.items():
+        
+        mentions_with_taxa = list(corpus_sa[pmid]["annotations"])
+
+        for a1 in annotations:
+            s1, m1 = a1["start"], a1["entity_text"]
+            found = False
+
+            for index, a2 in enumerate(mentions_with_taxa):
+                s2 = a2["start"]
+                m2 = a2["mention"].lower()
+
+                # exact start match
+                if (s1 == s2) or (s2 - 3 <= s1 <= s2):
+                    pass
+                # start within 7 chars before s2 AND mention matches
+                elif s2 - 8 <= s1 <= s2 and m1 == m2:
+                    pass
+                else:
+                    continue
+
+                # if any condition passed:
+                try:
+                    taxid = a2["taxid"].split(":")[-1].split(",")[0]
+                    a1["type"] = taxonomy[taxid]["name"]
+                except:
+                    print(a1)
+                mentions_with_taxa.pop(index)
+                found = True
+                break
+
+            if not found:
+                print(pmid)
+                print(a1)
+                print(mentions_with_taxa)
+
+    return corpus
+
+
 def main(args):
 
     dataset_folder = args.input_dir # "/submission/datasets/s800/processed_data"
     output_dir = Path(dataset_folder).parent / "predictions"
     stats_path = Path(dataset_folder)/ "statistics_test.json"
-
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     dataset_folder = Path(dataset_folder)
     test_folder = dataset_folder / "test"
 
-    test = read_dataset(dataset_folder / "test")
     traindev = read_dataset(dataset_folder /"traindev")
-    
+    test = read_dataset(dataset_folder / "test")
+
     unseen_concepts = get_zero_shot_concepts(test, traindev)
     unseen_mentions = get_zero_shot_mentions(test, traindev)
 
@@ -195,54 +321,88 @@ def main(args):
     with stats_path.open("w") as file:
         json.dump(stats, file, indent=4)
 
+    if "gene" in str(test_folder):
+
+        corpus = read_gene_dataset(test_folder)
+        if "nlm-gene" in str(test_folder):
+            species_assign_path = test_folder.parent.parent / "nlm_gene_test.PubTator" 
+        elif "ncbi-gene" in str(test_folder):
+            species_assign_path = test_folder.parent.parent / "gnormplus_test.PubTator" 
+        else:
+            print(f"Warning: Not existing GENE dataset {test_folder}")
+            raise Exception
+        
+        print(f"Loading species assignment data from {str(species_assign_path)}")
+        corpus_sa = read_data_sa(species_assign_path)
+
+        print("Loading NCBI taxonomy...")
+        #taxonomy = build_kb(Path("../../BioNEL/BioSyn/datasets/kb/ncbitaxon.obo"))
+
+        oracle = False
+        if oracle:
+            species_assigned = corpus
+        else:
+            print("Assigning gene mentions to species.")
+            species_assigned = assign_species(corpus, corpus_sa, taxonomy=taxonomy)
+
     RESPAN = True
     test_data = []
-    
+
     for file in glob(os.path.join(test_folder, '*.txt')):
 
         with open(file, encoding="utf-8") as f:
             text = f.read()
 
         filename = os.path.basename(file)
-        annotations = []
+        pmid = filename.split(".")[0]
 
-        with open(os.path.join(test_folder, filename.replace(".txt", ".concept")), encoding="utf-8") as f:
-            for line in f.readlines():
-                if not line.strip() :
-                    continue
-                pid, position, role, mention, cuis = line.strip().split("||")
-                annotations.append({
-                        "cui": cuis,
-                        "start": position.split("|")[0],
-                        "end": position.split("|")[1],
-                        "mention": mention
-                    })
-        if RESPAN:
-            merge_bad = True if "s800" in str(test_folder) else False
-            entity_level_data = split_and_respan(
-                {"text": text, "annotations": annotations}, 
-                merge_bad=merge_bad
-                )
+        if "gene" in str(test_folder):
+            annotations = [a | {"mention":a["entity_text"], "type":a["type"], } for a in species_assigned[pmid]]
+            entity_level_data = split_and_respan({"text": text, "annotations": annotations})
             test_data.extend(entity_level_data)
+
         else:
-            for a in annotations:
-                test_data.append(
-                    {
-                        "entity_text":a["mention"].lower(),
-                        "cui": a["cui"], 
-                        "start":a["start"],
-                        "end":a["end"], 
-                        "sentence": text
-                        }
+            annotations = []
+            with open(os.path.join(test_folder, filename.replace(".txt", ".concept")), encoding="utf-8") as f:
+                for line in f.readlines():
+                    if not line.strip() :
+                        continue
+                    pid, position, role, mention, cuis = line.strip().split("||")
+                    annotations.append({
+                            "cui": cuis,
+                            "start": position.split("|")[0],
+                            "end": position.split("|")[1],
+                            "mention": mention,
+                            "type":role
+                        })
+            if RESPAN:
+                merge_bad = True if "s800" in str(test_folder) else False
+                entity_level_data = split_and_respan(
+                    {"text": text, "annotations": annotations}, 
+                    merge_bad=merge_bad
                     )
+                test_data.extend(entity_level_data)
+            else:
+                for a in annotations:
+                    test_data.append(
+                        {
+                            "entity_text":a["mention"].lower(),
+                            "cui": a["cui"], 
+                            "start":a["start"],
+                            "end":a["end"], 
+                            "sentence": text,
+                            "type":a["type"]
+                            }
+                        )
                 
     contextualized_test = pd.DataFrame(test_data)
 
     unseen_queries = pd.DataFrame(unseen_mentions)[["entity_text", "cui"]]\
         .merge(contextualized_test, how="left", on=["entity_text", "cui"])\
             .drop_duplicates(subset=["entity_text", "cui"]).to_dict("records")
-    
-    with open(output_dir / "queries.json", "w", encoding="utf-8") as file:
+
+    print(len(unseen_queries))
+    with open(output_dir / "new_queries.json", "w", encoding="utf-8") as file:
         json.dump(unseen_queries, file, indent=4)
             
 
