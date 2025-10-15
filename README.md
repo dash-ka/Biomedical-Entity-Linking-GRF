@@ -4,11 +4,13 @@
 
 Run the following commands:
 
-1. Download and unzip resources from
+1. Download datasets and kbs from
 
-2. Place the preprocessing scripts in the same folder with resources.
+2. Unzip the resources in 'submission' folder.
    
-3. Preprocess the dictionaries first
+3. Place the preprocessing scripts in 'submission' folder.
+   
+4. Preprocess the dictionaries first
 
 ```bash
 cd preprocess/kb
@@ -19,9 +21,9 @@ python --dictionary_path ../../kb/ncbi_gene_subset.txt --output_dir ../../kbs/nc
 python --dictionary_path ../../kb/ncbitaxon.obo --output_dir ../../kbs/ncbi-taxonomy
 ```
 
-4. Preprocess datasets
+5. Preprocess datasets
 
-3. Get unseen queries.json file for GRF generation.
+6. Get unseen queries.json file for GRF generation.
 
 ```bash
 cd ../..
