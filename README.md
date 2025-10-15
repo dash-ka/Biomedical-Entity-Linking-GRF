@@ -6,9 +6,9 @@ Run the following commands:
 
 1. Download datasets and kbs from https://zenodo.org/records/17359566 
 
-3. Unzip the resources in 'submission' folder.
+3. Unzip the resources in `submission` folder.
    
-4. Place the preprocessing scripts in 'submission' folder.
+4. Place the preprocessing scripts in `submission` folder.
    
 5. Preprocess the dictionaries first
 
@@ -35,7 +35,7 @@ python s800_preprocess.py --corpus_dir ../../datasets/s800/ --dictionary_dir ../
 python linnaeus_preprocess.py  --dictionary_dir ../../kbs/ncbi-taxonomy/ --output_dir ../../datasets/linnaeus/processed_data/
 ```
 
-6. Build unseen test queries queries.json file for GRF generation.
+6. Build unseen test queries `queries.json` file for GRF generation.
 
 ```bash
 cd preprocess
@@ -48,3 +48,5 @@ python get_unseen_queries.py --input_dir ../datasets/nlm-gene/processed_data/
 python get_unseen_queries.py --input_dir ../datasets/s800/processed_data/
 python get_unseen_queries.py --input_dir ../datasets/linnaeus/processed_data/
 ```
+
+7. To reproduce the GRF results run the `apply_grf.py` script for each dataset.
