@@ -35,16 +35,16 @@ python s800_preprocess.py --corpus_dir ../../datasets/s800/ --dictionary_dir ../
 python linnaeus_preprocess.py  --dictionary_dir ../../kbs/ncbi-taxonomy/ --output_dir ../../datasets/linnaeus/processed_data/
 ```
 
-8. Get unseen queries.json file for GRF generation.
+6. Build unseen test queries queries.json file for GRF generation.
 
 ```bash
-cd ../..
-python get_unseen_queries.py --input_dir ../submission/datasets/ncbi-disease/processed_data/
-python get_unseen_queries.py --input_dir ../submission/datasets/bc5cdr-disease/processed_data/
-python get_unseen_queries.py --input_dir ../submission/datasets/bc5cdr-chemical/processed_data/
-python get_unseen_queries.py --input_dir ../submission/datasets/nlm-chemical/processed_data/
-python get_unseen_queries.py --input_dir ../submission/datasets/ncbi-gene/processed_data/
-python get_unseen_queries.py --input_dir ../submission/datasets/nlm-gene/processed_data/
-python get_unseen_queries.py --input_dir ../submission/datasets/s800/processed_data/
-python get_unseen_queries.py --input_dir ../submission/datasets/ncbi-taxon/processed_data/
+cd preprocess
+python get_unseen_queries.py --input_dir ../datasets/ncbi-disease/processed_data/
+python get_unseen_queries.py --input_dir ../datasets/bc5cdr-disease/processed_data/
+python get_unseen_queries.py --input_dir ../datasets/bc5cdr-chemical/processed_data/
+python get_unseen_queries.py --input_dir ../datasets/nlm-chemical/processed_data/
+python get_unseen_queries.py --input_dir ../datasets/gnormplus/processed_data/
+python get_unseen_queries.py --input_dir ../datasets/nlm-gene/processed_data/
+python get_unseen_queries.py --input_dir ../datasets/s800/processed_data/
+python get_unseen_queries.py --input_dir ../datasets/linnaeus/processed_data/
 ```
