@@ -48,5 +48,6 @@ python get_unseen_queries.py --input_dir ../datasets/nlm-gene/processed_data/
 python get_unseen_queries.py --input_dir ../datasets/s800/processed_data/
 python get_unseen_queries.py --input_dir ../datasets/linnaeus/processed_data/
 ```
-
-7. To reproduce the GRF results run the `apply_grf.py` script for each dataset.
+7. Generate Feedback with an LLM.
+   
+8. To reproduce the GRF results run the `run_grf_experiment.py` script for each dataset.
