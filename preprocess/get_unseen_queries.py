@@ -1,4 +1,5 @@
 # This script generates queries.json file with contextualized and unseen test mentions.
+# We adapt the original scripts from Tutubalina et al. from https://github.com/insilicomedicine/Fair-Evaluation-BERT/blob/master/process_data.py
 
 import gzip, json, re, os, pysbd, argparse, pronto
 import pandas as pd
@@ -412,4 +413,5 @@ if __name__ == '__main__':
                     help='path to the processed test folder')
     args = parser.parse_args()
     
+
     main(args)
