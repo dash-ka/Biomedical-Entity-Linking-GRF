@@ -4,13 +4,13 @@
 
 Run the following commands:
 
-1. Download datasets and kbs from
+1. Download datasets and kbs from https://zenodo.org/records/17359566 
 
-2. Unzip the resources in 'submission' folder.
+3. Unzip the resources in 'submission' folder.
    
-3. Place the preprocessing scripts in 'submission' folder.
+4. Place the preprocessing scripts in 'submission' folder.
    
-4. Preprocess the dictionaries first
+5. Preprocess the dictionaries first
 
 ```bash
 cd preprocess/kb
