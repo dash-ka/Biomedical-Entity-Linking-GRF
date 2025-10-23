@@ -100,7 +100,6 @@ def run(client, model_name, queries, target_terminology):
 
                         else:
                             item["synonyms"] = response["synonyms"]
-                            success_rate+=1
 
                     elif feedback_type == "definition":
                         if not response["definition"].strip():
@@ -166,4 +165,5 @@ if __name__ == "__main__":
     
 
     
+
 
