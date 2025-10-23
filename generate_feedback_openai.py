@@ -154,7 +154,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--OPENAI_API_KEY", type=str, required=True, help="Your OpenAI API key.")
-    parser.add_argument("--model_name", type=str, default="gpt-4o-mini", help="OpenAI model name.")
+    parser.add_argument("--model_name", type=str, default="gpt-4o-2024-08-06", help="OpenAI model name.")
     parser.add_argument("--queries_path", type=str, required=True, help="Path to JSON file with queries.")
     parser.add_argument("--dataset_name", type=str, required=True, choices=[
         "ncbi-disease", "bc5cdr-disease", "bc5cdr-chemical", "nlm-chemical",
@@ -166,3 +166,4 @@ if __name__ == "__main__":
     
 
     
+
