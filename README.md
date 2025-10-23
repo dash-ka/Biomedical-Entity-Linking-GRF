@@ -58,4 +58,9 @@ python generate_feedback_openai.py --OPENAI_API_KEY "YOUR_OPENAI_KEY" --model_na
 python generate_feedback_vllm.py --HF_TOKEN "YOUR_HF_TOKEN" --model_name "Qwen/Qwen3-14B" --queries_path ../datasets/ncbi-disease/raw_queries.json --dataset_name ncbi-disease
 ```
    
-8. To reproduce the GRF results run the `run_grf_experiment.py` script for each dataset. 
+8. To reproduce the GRF results use `run_grf_experiment.py` script on each dataset (see example below using NCBI-Disease).
+```bash
+python run_grf_experiment.py --model_path "cambridgeltl/SapBERT-from-PubMedBERT-fulltext" --queries_path ../datasets/ncbi-disease/raw_queries.json --dictionary_path ../kbs/ctd-disease/train_dictionary.txt --output_path "./grf_results_ncbi_disease.csv"
+```
+
+To finetune the BioSyn model use scripts at the following [link](https://github.com/dmis-lab/BioSyn)
