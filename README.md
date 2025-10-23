@@ -48,6 +48,14 @@ python get_unseen_queries.py --input_dir ../datasets/nlm-gene/processed_data/
 python get_unseen_queries.py --input_dir ../datasets/s800/processed_data/
 python get_unseen_queries.py --input_dir ../datasets/linnaeus/processed_data/
 ```
-7. Generate Feedback with an LLM.
+7.1 Generate Feedback with an LLM using OpenAI.
+```bash
+python generate_feedback_openai.py --OPENAI_API_KEY "YOUR_OPENAI_KEY" --model_name "gpt-4o-2024-08-06" --queries_path ../datasets/ncbi-disease/raw_queries.json --dataset_name ncbi-disease
+```
+
+7.2 Generate Feedback with an open-source LLM using vLLM.
+```bash
+python generate_feedback_vllm.py --HF_TOKEN "YOUR_HF_TOKEN" --model_name "Qwen/Qwen3-14B" --queries_path ../datasets/ncbi-disease/raw_queries.json --dataset_name ncbi-disease
+```
    
-8. To reproduce the GRF results run the `run_grf_experiment.py` script for each dataset.
+8. To reproduce the GRF results run the `run_grf_experiment.py` script for each dataset. 
