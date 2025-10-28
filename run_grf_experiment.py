@@ -516,6 +516,7 @@ class GRFExperiment:
         for w in alphas:
             for depth in feedback_depths:
                 candidate_rankings, gold_cuis = apply_rank_grf(
+                    self.tokenizer, self.encoder, self.index, self.eval_dictionary,
                     queries, 
                     feedback_keys=feedback_type, 
                     alpha=w, 
@@ -574,6 +575,7 @@ class GRFExperiment:
         for w in alphas:
             for depth in feedback_depths:
                 candidate_rankings, gold_cuis = apply_vector_grf(
+                    self.tokenizer, self.encoder, self.index, self.eval_dictionary,
                     queries, 
                     feedback_keys=feedback_type, 
                     alpha=w, 
@@ -623,7 +625,10 @@ class GRFExperiment:
             feedback_depths = [1]
 
         for depth in feedback_depths:
-            candidate_rankings, gold_cuis = apply_text_grf(queries, feedback_keys=feedback_type, depth=depth, k=k)
+            candidate_rankings, gold_cuis = apply_text_grf(
+                self.tokenizer, self.encoder, self.index, self.eval_dictionary,
+                queries, feedback_keys=feedback_type, depth=depth, k=k
+            )
             
             cuis_rankings = []
             for ranking in candidate_rankings:
@@ -816,4 +821,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     main(args)
+
 
