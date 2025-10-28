@@ -112,13 +112,13 @@ def run(client, model_name, queries, target_terminology):
                         item["definition"] = response["definition"]
 
                     elif feedback_type == "standard_name":
-                        if not response["name"].strip():
-                            print(f"Query {idx}: No definition generated for {term}\n:", response["name"], "\nRetrying...")
+                        if not response["standard_name"].strip():
+                            print(f"Query {idx}: No definition generated for {term}\n:", response["standard_name"], "\nRetrying...")
                             response = generate_feedback(client, model_name, user_message, feedback_type=feedback_type)
                             response = json.loads(response)
-                            if not response["name"].strip():
+                            if not response["standard_name"].strip():
                                 print("Still no standard name generated, saving anyway.")
-                        item["standard_name"] = response["name"]
+                        item["standard_name"] = response["standard_name"]
                     else:
                         raise ValueError(f"Unknown strategy: {feedback_type}")
                         
@@ -166,3 +166,4 @@ if __name__ == "__main__":
     
 
     
+
