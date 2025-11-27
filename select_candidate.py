@@ -50,4 +50,5 @@ for query, candidates in tqdm(zip(queries, predictions), total=len(queries)):
     response = gen_selection(USER_MESSAGE)
     query["gpt4o_10"] = response
 
-with open()
+with open(main_folder/"raw_queries.json", "w", encoding="utf-8") as file:
+    json.dump(queries, file, indent=4)
