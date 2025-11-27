@@ -1,5 +1,6 @@
 from openai import OpenAI
-import os
+import os, json
+from tqdm import tqdm
 from pathlib import Path
 
 SELECT_PROMPT = """
