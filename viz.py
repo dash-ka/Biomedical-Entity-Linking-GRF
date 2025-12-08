@@ -66,8 +66,8 @@ def plot_recall_from_long_format(csv_path, target_k_synonyms=10, target_alpha=0.
         label = f"{label_strategy} (10 synonyms)"
         plt.plot(sub_df['cutoff'], sub_df['mean'],
                 marker='o', markersize=7,
-                    markeredgecolor='white',   # ✅ white border around markers
-                    markeredgewidth=0.5,       # ✅ thickness of white border
+                    markeredgecolor='white',   #  white border around markers
+                    markeredgewidth=0.5,       #  thickness of white border
                 label=label,
                 color=file_color_map['main'],
                 linestyle=style_map.get(parts[0], '--'))
@@ -80,8 +80,8 @@ def plot_recall_from_long_format(csv_path, target_k_synonyms=10, target_alpha=0.
         label = f"{label_strategy} (All-in-One)"
         plt.plot(sub_df['cutoff'], sub_df['mean'],
                     marker='o', markersize=7,
-                    markeredgecolor='white',   # ✅ white border around markers
-                    markeredgewidth=0.5,       # ✅ thickness of white border
+                    markeredgecolor='white',   #  white border around markers
+                    markeredgewidth=0.5,       #  thickness of white border
                     label=label,
                     color=file_color_map['all'],
                     linestyle=style_map.get(parts[0], '--'))
@@ -95,8 +95,8 @@ def plot_recall_from_long_format(csv_path, target_k_synonyms=10, target_alpha=0.
         label = f"{label_strategy} (definition)"
         plt.plot(sub_df['cutoff'], sub_df['mean'],
                     marker='o', markersize=7,
-                    markeredgecolor='white',   # ✅ white border around markers
-                    markeredgewidth=0.5,       # ✅ thickness of white border
+                    markeredgecolor='white',   #  white border around markers
+                    markeredgewidth=0.5,       #  thickness of white border
                     label=label,
                     color=file_color_map['definitions'],
                     linestyle=style_map.get(parts[0], '--'))
@@ -110,8 +110,8 @@ def plot_recall_from_long_format(csv_path, target_k_synonyms=10, target_alpha=0.
         label = f"{label_strategy} (standard name)"
         plt.plot(sub_df['cutoff'], sub_df['mean'],
                 marker='o', markersize=7,
-                    markeredgecolor='white',   # ✅ white border around markers
-                    markeredgewidth=0.5,       # ✅ thickness of white border
+                    markeredgecolor='white',   #  white border around markers
+                    markeredgewidth=0.5,       #  thickness of white border
                 label=label,
                 color=file_color_map['standard'],
                 linestyle=style_map.get(parts[0], '--'))
@@ -131,6 +131,7 @@ def plot_recall_from_long_format(csv_path, target_k_synonyms=10, target_alpha=0.
     plt.tight_layout()
     plt.show()
 
+    
 def plot_recall_vs_alpha(csv_path): 
     
     # Setup figure with 3 subplots
@@ -224,7 +225,6 @@ def plot_recall_vs_alpha(csv_path):
                         label=label
                     )
                 
-        #ax.set_title(f"Recall@{recall_k} vs Alpha")
         ax.set_xlabel("Alpha")
         ax.set_xticks([round(a, 1) for a in list(pd.Series([i * 0.1 for i in range(11)]))])
         ax.grid(True)
